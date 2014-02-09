@@ -10,18 +10,13 @@ arg0=$(basename $0)
 
 #-------------------------------------------------------------------------------
 
-function make_ca_config_file () {
-}
-
-#-------------------------------------------------------------------------------
-
 function do_initca () {
     caname=$1
     subj=$2
     email=$3
     echo "do_initca"
     echo "  CA name = '$caname'"
-    echo "  subject = '$subject'"
+    echo "  subject = '$subj'"
     echo "  email = '$email'"
 
     echo -n "enter passphrase (will be shown): "
@@ -171,11 +166,11 @@ EOF
 #-------------------------------------------------------------------------------
 
 function do_sign () {
-    caname=$1
-    csrfile=$2
+    csrfile=$1
+    caname=$2
     echo "do_sign"
-    echo "  CA name = '$caname'"
     echo "  CSR file = '$csrfile'"
+    echo "  CA name = '$caname'"
 
     domain=${csrfile%.csr}
 
@@ -258,16 +253,36 @@ function do_sign () {
 EOF
 
     openssl ca -config $cfgfile -in $domain.csr -days $signdays -out $domain-$caname.crt
+    openssl x509 -in $domain-$caname.crt -text | awk '/^Certificate/,/^---/' | grep -v '^ .*:$' | sed 's/^/CERT>> /g'
 }
 
 #-------------------------------------------------------------------------------
 
 function usage () {
-    subj='/C=US/ST=NC/L=Cary/O=alanporter.com/O=alanporter.com/CN=ca.alanporter.com'
-    echo "$arg0 initca myCAname '$subj' certs@ca.alanporter.com"
-    subj='/C=US/ST=NC/L=Cary/O=alanporter.com/O=alanporter.com'
-    echo "$arg0 domaincert '$subj' domain@example.com example.com,www.example.com,example2.org,www.example2.org"
-    echo "$arg0 sign csrfile.csr"
+    echo "usage:"
+    echo ""
+
+    subj='/C=US/ST=NC/L=Cary/O=alanporter.com/OU=ca.alanporter.com/CN=ca.alanporter.com'
+    echo "TO CREATE A CERTIFICATE AUTHORITY"
+    echo "  $arg0 initca <ca> <subj> <email>"
+    echo "  $arg0 initca myCAname '$subj' certs@ca.alanporter.com"
+    echo "  where C = country, ST = state, L = location/city, O = organization, OU = organization unit"
+    echo "  and CN = common name (the name of the certificate authority)"
+    echo ""
+
+    subj='/C=US/ST=NC/L=Cary/O=alanporter.com/OU=alanporter.com'
+    echo "TO CREATE A DOMAIN CERTIFICATE"
+    echo "  $arg0 domaincert <subj> <email> <domain1>[,<domain2>][,...]"
+    echo "  $arg0 domaincert '$subj' domain@example.com example.com,www.example.com,example2.org,www.example2.org"
+    echo "  where C = country, ST = state, L = location/city, O = organization, OU = organization unit"
+    echo "  CN will be filled in using the first domain name"
+    echo "  domains are comma-separated, no spaces"
+    echo ""
+
+    echo "TO SIGN A DOMAIN CERTIFICATE WITH A CA CERT"
+    echo "  $arg0 sign <csrfile> <ca>"
+    echo "  $arg0 sign csrfile.csr myCAname"
+    echo ""
 }
 
 #-------------------------------------------------------------------------------
@@ -278,21 +293,16 @@ case $1 in
         usage
         ;;
     initca )
-        caname=$2
-        subj=$3
-        email=$4
-        do_initca $caname $subj $email
+        shift
+        do_initca $*
         ;;
     domaincert )
-        subj=$2
-        email=$3
-        domains=$4
-        do_domaincert $subj $email $domains
+        shift
+        do_domaincert $*
         ;;
     sign )
-        caname=$2
-        csr=$3
-        do_sign $caname $csr
+        shift
+        do_sign $*
         ;;
     * )
         usage
