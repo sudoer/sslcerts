@@ -216,7 +216,7 @@ function do_sign () {
 
     default_days    = 365                   # how long to certify for
     default_crl_days= 30                    # how long before next CRL
-    default_md      = md5                   # ALAN: was 'default'
+    default_md      = sha1                  # ALAN: was 'default'
     preserve        = no                    # keep passed DN ordering
 
     # A few difference way of specifying how similar the request should look
