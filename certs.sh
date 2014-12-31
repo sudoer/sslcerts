@@ -1,7 +1,7 @@
 #!/bin/bash
 
 caname='apca'
-cabits=8192
+cabits=4096
 cadays=$((365*30))
 signbits=2048
 signdays=$((365*1))
@@ -74,7 +74,7 @@ function do_domaincert () {
     email=$2
     HOSTNAMES=($(echo $3 | tr ',' ' '))
     echo "do_domaincert"
-    echo "  subject = '$subject'"
+    echo "  subject = '$subj'"
     echo "  email = '$email'"
     for i in $( seq 0 $(( ${#HOSTNAMES[@]} - 1 )) ) ; do
         echo -n "  domain = '${HOSTNAMES[$i]}'"
