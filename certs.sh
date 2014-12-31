@@ -1,14 +1,26 @@
 #!/bin/bash
 
-caname='apca'
-cacn='ca.alanporter.com'
+# This script is used to create domain certificates, and also to
+# create a CA certificate and to sign domain certs using the CA.
+# It handles multi-domain certificates (using the subjectAltName
+# field).   - Alan Porter, 2014-12-31
+
+# Customize this stuff by creating a file called '$HOME/.certs.cfg' or
+# '/etc/certs.cfg' with your own values.  Use bash notation.  It'll
+# be sourced in here.
+caname='example'
+cacn='ca.example.com'
 cabits=4096
 cadays=$((365*30))
 signbits=2048
 signdays=$((365*1))
 
-arg0=$(basename $0)
-
+# Everything from here on down should not need modification.
+#-------------------------------------------------------------------------------
+# Note - This script does not rely on any environment variables or any
+# openssl.conf file.  Surprisingly, most tutorials I have found online
+# leave out some important detail that is buried in the author's config
+# files.  This script creates the config files that it needs on the fly.
 #-------------------------------------------------------------------------------
 
 function do_initca () {
@@ -238,15 +250,15 @@ function usage () {
     echo "usage:"
     echo ""
 
-    subj='/C=US/ST=NC/L=Cary/O=alanporter.com/OU=ca.alanporter.com/CN=ca.alanporter.com'
+    subj='/C=US/ST=NC/L=Cary/O=example.com/OU=ca.example.com/CN=ca.example.com'
     echo "TO CREATE A CERTIFICATE AUTHORITY"
     echo "  $arg0 initca <ca> <subj> <email>"
-    echo "  $arg0 initca myCAname '$subj' certs@ca.alanporter.com"
+    echo "  $arg0 initca myCAname '$subj' certs@ca.example.com"
     echo "  where C = country, ST = state, L = location/city, O = organization, OU = organization unit"
     echo "  and CN = common name (the name of the certificate authority)"
     echo ""
 
-    subj='/C=US/ST=NC/L=Cary/O=alanporter.com/OU=alanporter.com'
+    subj='/C=US/ST=NC/L=Cary/O=example.com/OU=example.com'
     echo "TO CREATE A DOMAIN CERTIFICATE"
     echo "  $arg0 domaincert <subj> <email> <domain1>[,<domain2>][,...]"
     echo "  $arg0 domaincert '$subj' domain@example.com example.com,www.example.com,example2.org,www.example2.org"
@@ -262,6 +274,12 @@ function usage () {
 }
 
 #-------------------------------------------------------------------------------
+
+# START
+arg0=$(basename $0)
+for cfgfile in /etc/certs.cfg $HOME/.certs.cfg ; do
+    [[ -f $cfgfile ]] && echo "reading $cfgfile" && source $cfgfile
+done
 
 # COMMAND-LINE ARGUMENTS
 case $1 in
