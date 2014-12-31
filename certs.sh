@@ -1,6 +1,7 @@
 #!/bin/bash
 
 caname='apca'
+cacn='ca.alanporter.com'
 cabits=4096
 cadays=$((365*30))
 signbits=2048
@@ -34,7 +35,7 @@ function do_initca () {
     if [ -f $caname.csr ] ; then
         echo "using existing signing request file '$caname.csr'"
     else
-        openssl req -new -nodes -passin pass:$passphrase -key $caname.key -subj "${subj/COMMON/ca.alanporter.com}" -out $caname.csr
+        openssl req -new -nodes -passin pass:$passphrase -key $caname.key -subj "${subj/COMMON/$cacn}" -out $caname.csr
     fi
 
     # self-sign the certificate
@@ -93,23 +94,12 @@ function do_domaincert () {
         exit 1
     elif [[ ${#HOSTNAMES[@]} -eq 1 ]] ; then
         # 1 hostname specified
-        ##OLD  CNSTUFF='
-        ##OLD      commonName = Common Name (eg, YOUR name)
-        ##OLD      commonName_max = 64'
         SAN=''
     else
         # >1 hostnames specified
-        ##OLD  CNSTUFF=''
         for i in $( seq 0 $(( ${#HOSTNAMES[@]} - 1 )) ) ; do
-            ##OLD  CNSTUFF="$CNSTUFF
-            ##OLD     $i.commonName = Common Name (eg, YOUR name)
-            ##OLD     $i.commonName_default = www.domain$i.com
-            ##OLD     $i.commonName_max = 64"
             SAN="${SAN},DNS:${HOSTNAMES[$i]}"
         done
-        ##OLD  CNSTUFF='
-        ##OLD      commonName = Common Name (eg, YOUR name)
-        ##OLD      commonName_max = 64'
         SAN="subjectAltName=\"${SAN#,}\""
         echo "san>>$SAN"
     fi
@@ -132,20 +122,6 @@ function do_domaincert () {
     basicConstraints = CA:FALSE
     keyUsage = nonRepudiation, digitalSignature, keyEncipherment
     ${SAN}
-    [ req_distinguished_name ]
-    # countryName = Country Name (2 letter code)
-    # countryName_default = AU
-    # countryName_min = 2
-    # countryName_max = 2
-    # stateOrProvinceName = State or Province Name (full name)
-    # stateOrProvinceName_default = Some-State
-    # localityName = Locality Name (eg, city)
-    # 0.organizationName = Organization Name (eg, company)
-    # 0.organizationName_default = Internet Widgits Pty Ltd
-    # organizationalUnitName = Organizational Unit Name (eg, section)
-    # ${CNSTUFF}
-    # emailAddress = Email Address
-    # emailAddress_max = 64
 EOF
 
     # generate a CSR (certificate signing request)
@@ -183,9 +159,9 @@ function do_sign () {
     cfgfile=$(mktemp /tmp/openssl.XXXXXX)
     cat > $cfgfile << EOF
     [ ca ]
-    default_ca = ca_alan
+    default_ca = ca_mine
 
-    [ ca_alan ]
+    [ ca_mine ]
     dir             = $db   # Where everything is kept
     crl_dir         = \$dir/crl               # Where the issued crl are kept
     database        = \$dir/index.txt         # database index file.
