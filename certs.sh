@@ -5,6 +5,10 @@
 # It handles multi-domain certificates (using the subjectAltName
 # field).   - Alan Porter, 2014-12-31
 
+# latest copy: https://github.com/sudoer/sslcerts
+
+#-------------------------------------------------------------------------------
+
 # Customize this stuff by creating a file called '$HOME/.certs.cfg' or
 # '/etc/certs.cfg' with your own values.  Use bash notation.  It'll
 # be sourced in here.
@@ -15,6 +19,7 @@ cadays=$((365*30))
 signbits=2048
 signdays=$((365*1))
 
+#-------------------------------------------------------------------------------
 # Everything from here on down should not need modification.
 #-------------------------------------------------------------------------------
 # Note - This script does not rely on any environment variables or any
