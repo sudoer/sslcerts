@@ -139,6 +139,7 @@ function do_domaincert () {
     basicConstraints = CA:FALSE
     keyUsage = nonRepudiation, digitalSignature, keyEncipherment
     ${SAN}
+    [ req_distinguished_name ]
 EOF
 
     # generate a CSR (certificate signing request)
